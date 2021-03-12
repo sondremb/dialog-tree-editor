@@ -68,6 +68,7 @@ export const Editor = () => {
       .append('g')
       .attr('stroke', '#999')
       .attr('stroke-opacity', 0.6)
+      .attr('marker-end', 'url(#triangle)')
       .selectAll('line')
       .data(links)
       .join('line')
@@ -111,14 +112,33 @@ export const Editor = () => {
 
     // cleanup func, remove all children and stop simulation
     return () => {
-      svg.selectAll('*').remove();
+      svg.selectAll('g').remove();
       simulation.stop();
     };
   }, []);
 
   return (
     <div>
-      <svg ref={ref}></svg>
+      <svg ref={ref}>
+        <defs>
+          <marker
+            id="triangle"
+            markerUnits="userSpaceOnUse"
+            markerWidth="10"
+            markerHeight="7"
+            refX="15" // offset arrow by its length (10) + node radius (5)
+            refY="3.5" // offset arrow by half its width (7)
+            orient="auto"
+            // match stroke params for links
+            stroke="#999"
+            strokeOpacity="0.6"
+            fill="#999"
+            fillOpacity="0.6"
+          >
+            <polygon points="0 0, 10 3.5, 0 7" />
+          </marker>
+        </defs>
+      </svg>
     </div>
   );
 };
