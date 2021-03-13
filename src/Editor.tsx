@@ -59,12 +59,14 @@ export const Editor = () => {
         .on('end', dragended);
     };
 
+    // need a root group on which to apply global transformations, e.g. zoom
+    const root = svg.append('g');
     const link: d3.Selection<
       SVGLineElement | BaseType,
       Link,
       SVGGElement,
       unknown
-    > = svg
+    > = root
       .append('g')
       .attr('stroke', '#999')
       .attr('stroke-opacity', 0.6)
@@ -74,7 +76,7 @@ export const Editor = () => {
       .join('line')
       .attr('stroke-width', (d) => Math.sqrt(d.value));
 
-    const node = svg
+    const node = root
       .append('g')
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
@@ -84,6 +86,12 @@ export const Editor = () => {
       .attr('r', 5)
       .attr('fill', 'tomato') // TODO add color func
       .call(drag(simulation));
+
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
+      .on('zoom', (e: any) => root.attr('transform', e.transform));
+
+    svg.call(zoom);
 
     node.append('title').text((d) => d.id);
 
