@@ -16,7 +16,7 @@ interface Link extends d3.SimulationLinkDatum<Node> {
 export const Editor = () => {
   const ref: RefObject<SVGSVGElement> = useRef(null);
   useEffect(() => {
-    if (ref === null) return;
+    if (ref.current === null) return;
     const svg = d3.select(ref.current);
     const [width, height] = [800, 500];
     svg.attr('width', width).attr('height', height);
