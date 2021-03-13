@@ -1,0 +1,72 @@
+{
+  "astra": [
+    { "id": 1, "content": "This is the start", "responses": [11, 12, 13, 14] },
+    {
+      "id": 2,
+      "content": "You have seen either 2 or 3 - not both",
+      "responses": [11, 12, 13, 14]
+    },
+    {
+      "id": 3,
+      "content": "You have seen both 2 and 3!",
+      "responses": [11, 12, 13, 14]
+    }
+  ],
+  "player": [
+    {
+      "id": 11,
+      "content": "This is response 1 - always available",
+      "responses": [{ "id": 1 }]
+    },
+    {
+      "id": 12,
+      "content": "This is response 2 - also always available - show me something special!",
+      "responses": [
+        {
+          "id": 2,
+          "condition": {
+            "op": "AND",
+            "lhs": {
+              "op": "SEEN",
+              "clause": "ANY",
+              "ids": [2, 3]
+            },
+            "rhs": {
+              "op": "NOT",
+              "cond": {
+                "op": "SEEN",
+                "clause": "ALL",
+                "ids": [2, 3]
+              }
+            }
+          }
+        },
+        {
+          "id": 3,
+          "condition": { "op": "SEEN", "clause": "ALL", "ids": [2, 3] }
+        },
+        { "id": 1 }
+      ]
+    },
+    {
+      "id": 13,
+      "content": "This is response 3 - available after either 1 or 2 have been tried",
+      "responses": [{ "id": 1 }],
+      "condition": {
+        "op": "SEEN",
+        "clause": "ANY",
+        "ids": [1, 2]
+      }
+    },
+    {
+      "id": 14,
+      "content": "This is response 4 - available after all of 1-3 have been tried",
+      "responses": [{ "id": 1 }],
+      "condition": {
+        "op": "SEEN",
+        "clause": "ALL",
+        "ids": [1, 2, 3]
+      }
+    }
+  ]
+}

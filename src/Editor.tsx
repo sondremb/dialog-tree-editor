@@ -1,20 +1,50 @@
 import React, { RefObject, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import data from './test_data.json';
+import data from './lines.json';
 import type { BaseType } from 'd3';
 
 interface Node extends d3.SimulationNodeDatum {
   id: string;
-  group: number;
+  content: string;
+  isPlayer: boolean;
 }
 interface Link extends d3.SimulationLinkDatum<Node> {
-  //source: string;
-  //target: string;
-  value: number;
+  optional: boolean;
 }
 
 export const Editor = () => {
   const ref: RefObject<SVGSVGElement> = useRef(null);
+
+  const playerNodes = data.player.map((l) => ({
+    id: l.id,
+    content: l.content,
+    isPlayer: true,
+  }));
+  const astraNodes = data.astra.map((l) => ({
+    id: l.id,
+    content: l.content,
+    isPlayer: false,
+  }));
+  const connects: unknown[] = [];
+  for (let line of data.player) {
+    for (let resp of line.responses) {
+      connects.push({
+        source: line.id,
+        target: resp.id,
+        optional: Boolean(resp.condition),
+      });
+    }
+  }
+  for (let line of data.astra) {
+    for (let resp of line.responses) {
+      connects.push({
+        source: line.id,
+        target: resp,
+        optional: Boolean(data.player.find((l) => l.id === resp)?.condition),
+      });
+    }
+  }
+
   useEffect(() => {
     if (ref.current === null) return;
     const svg = d3.select(ref.current);
@@ -23,8 +53,10 @@ export const Editor = () => {
 
     // d3 overloads the Object prototype, including Object.create
     // I don't like it but it's not my fault
-    const links: Link[] = data.links.map((d) => Object.create(d));
-    const nodes: Node[] = data.nodes.map((d) => Object.create(d));
+    const links: Link[] = connects.map((d) => Object.create(d));
+    const nodes: Node[] = playerNodes
+      .concat(astraNodes)
+      .map((d) => Object.create(d));
 
     const simulation: d3.Simulation<Node, Link> = d3
       .forceSimulation(nodes)
@@ -74,7 +106,7 @@ export const Editor = () => {
       .selectAll('line')
       .data(links)
       .join('line')
-      .attr('stroke-width', (d) => Math.sqrt(d.value));
+      .attr('stroke-dasharray', (l) => (l.optional ? '3 1' : ''));
 
     const node = root
       .append('g')
@@ -84,7 +116,7 @@ export const Editor = () => {
       .data(nodes)
       .join('circle')
       .attr('r', 5)
-      .attr('fill', 'tomato') // TODO add color func
+      .attr('fill', (n) => (n.isPlayer ? 'tomato' : 'lime'))
       .call(drag(simulation));
 
     const zoom = d3
@@ -93,7 +125,7 @@ export const Editor = () => {
 
     svg.call(zoom);
 
-    node.append('title').text((d) => d.id);
+    node.append('title').text((d) => d.content);
 
     simulation.on('tick', () => {
       // yeah this is horrible but also necessary
