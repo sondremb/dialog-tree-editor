@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useRef } from 'react';
+import React, { RefObject, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import data from './lines.json';
 import type { BaseType } from 'd3';
@@ -14,6 +14,13 @@ interface Link extends d3.SimulationLinkDatum<Node> {
 
 export const Editor = () => {
   const ref: RefObject<SVGSVGElement> = useRef(null);
+  const [selected, setSelected] = useState('');
+
+  useEffect(() => {
+    d3.selectAll('circle').attr('fill-opacity', (n: any) =>
+      n.id === selected ? 0.6 : 1,
+    );
+  }, [selected]);
 
   const playerNodes = data.player.map((l) => ({
     id: l.id,
@@ -72,6 +79,7 @@ export const Editor = () => {
         if (!event.active) simulation.alphaTarget(0.3).restart();
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
+        setSelected(event.subject.id);
       }
 
       function dragged(event: any) {
